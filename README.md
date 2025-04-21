@@ -107,6 +107,16 @@
   ```bash
   node src/index.js resources ./data/challenge-api.resources.json
   ```
+
+### 🔁 Run All Migrations at Once
+
+You can now run all migration steps sequentially using the following script:
+
+```bash
+node src/migrateAll.js
+```
+
+This script will automatically execute each step in order (`member-profiles`, `member-stats`, `resource-roles`, `resource-role-phase-dependencies`, `resources`), logging progress and duration for each. Ideal for full dataset migration in one command.
   
   ## 📒 Error Logs
   All failed migrations are logged under the `logs/` folder by model:
