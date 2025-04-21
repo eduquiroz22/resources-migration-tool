@@ -157,4 +157,77 @@ Please download them manually from the official challenge forum and place them u
   ---
   
   ✅ All requirements of the challenge have been implemented, including logs, unit tests, schema adherence, and configurability.
+
+
+## 🔧 Integrated Fixes & Enhancements
+
+Several improvements and refinements have been implemented throughout the migration tool to ensure performance, reliability, and clarity:
+
+### ✅ Progress Bar for Batch Processes
+
+A custom CLI progress bar was added using `utils/progressLogger.js`. This applies only to **batch-based migrations**, and provides a visual representation of migration progress based on the total number of records or batches processed:
+- Implemented for: `member-profiles`, `member-stats`, and `resources`
+- Skipped for small or in-memory migrations like `resource-roles` and `resource-role-phase-dependencies`
+
+### ✅ Efficient Validation via Binary Search
+
+Validation scripts for:
+- `MemberProfile`
+- `MemberStats`
+
+...now utilize **binary search** over pre-fetched and sorted database records by `userId`. This significantly improves performance from several minutes to a few seconds during large-scale validation (~850k records), compared to naive linear scanning.
+
+### ✅ Validation for All Models
+
+Additional validation scripts were also developed for:
+- `Resource`
+- `ResourceRole`
+- `ResourceRolePhaseDependency`
+
+While binary search was not applicable for these due to non-numeric or unordered IDs, the validation was still efficiently implemented using `Map`-based lookups with the `id` as the key.
+
+### ✅ Cleaner Code & Utility Reuse
+
+A reusable utility module `utils/batchMigrator.js` was created to consolidate the logic for:
+- Streamed reading of large JSON and NDJSON files
+- Batch-based record processing with `Promise.allSettled`
+- Progress tracking and error logging
+- Automatic detection of input format size
+
+This approach:
+- Avoids code duplication
+- Allows for consistent logging and error handling
+- Simplifies future extensions
+
+### ✅ Default Field Logic (createdAt, updatedAt, etc.)
+
+- Fields like `createdAt`, `updatedAt`, `createdBy`, and `updatedBy` are now conditionally set based on whether values exist in the original JSON.
+- If `updatedAt` or `updatedBy` are missing from the source, they are explicitly set to `null`, rather than omitted or auto-filled—ensuring data integrity.
+
+### ✅ FullAccess Compatibility Fix
+
+In `ResourceRole`, the original dataset sometimes includes only a `fullAccess` flag instead of `fullReadAccess` or `fullWriteAccess`.
+
+Logic was added to:
+- Derive `fullReadAccess` and `fullWriteAccess` from `fullAccess` when the specific fields are missing.
+- Ensure fallback to `.env` defaults only if neither are provided.
+
+```js
+const fullReadAccess = role.fullReadAccess ?? (role.fullAccess ?? DEFAULT_READ_ACCESS);
+const fullWriteAccess = role.fullWriteAccess ?? (role.fullAccess ?? DEFAULT_WRITE_ACCESS);
+```
+
+> 🚩 **Important Note:** Some records in the source data had `fullWriteAccess: true` but `fullReadAccess: false`, which is logically inconsistent. This was **not auto-corrected**, but a warning was added in the README for awareness during validation.
+
+### 📄 Validation Logs
+
+All validation scripts write their outputs and mismatches to `console.log`. You can redirect them to a file using:
+
+```bash
+node src/validation/validateMemberProfiles.js > logs/memberprofile_validation.log
+```
+
+---
+
+
   
