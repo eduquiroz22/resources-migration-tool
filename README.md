@@ -179,6 +179,12 @@ A custom CLI progress bar was added using `utils/progressLogger.js`. This applie
 - Implemented for: `member-profiles`, `member-stats`, and `resources`
 - Skipped for small or in-memory migrations like `resource-roles` and `resource-role-phase-dependencies`
 
+```
+💡 However, batch-compatible versions were also implemented for these smaller models, enabling future scalability in case the datasets grow significantly. These versions leverage the same reusable batch migration utility and are ready to be switched in if needed.
+```
+![Screenshot from 2025-04-21 15-04-23](https://github.com/user-attachments/assets/0bae2956-16b8-4999-81f8-3dda2ef7beea)
+
+
 ### ✅ Efficient Validation via Binary Search
 
 Validation scripts for:
